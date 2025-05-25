@@ -6,16 +6,29 @@ const mongoose = require("mongoose");
 const app = express();
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://www.iqcaboard.co.uk"],
+    origin: function(origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "https://www.iqcaboard.co.uk"
+    ];
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
     credentials: false,
     methods: ["GET", "POST", "OPTIONS", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type"],
   })
 );
+
+// app.options("*", cors());
 app.use(express.json());
 
 //mongoDB connection
-const MONGO_URL =
+const MONGO_URL = process.env.MONGO_URL ||
   "mongodb+srv://apconsultancy36:Ye7uV1iRtUs8xEwS@cluster0.iezchd7.mongodb.net/IQCA?retryWrites=true&w=majority&appName=Cluster0";
 
 // Proper connection function with options
