@@ -13,7 +13,6 @@ app.use(
     ],
     methods: ["GET", "POST", "OPTIONS", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type"],
-    credentials: true,
   })
 );
 app.use(express.json());
