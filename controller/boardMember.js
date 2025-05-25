@@ -1,6 +1,5 @@
 const BoardMembers = require("../models/boardMembers");
-const nodemailer = require("nodemailer");
-const multer = require("multer");
+// const nodemailer = require("nodemailer");
 const auth = require("dotenv").config();
 /* Removed misplaced object literal that caused syntax error */
 // module.exports.boardMemberInquiry = async (req, res) => {
@@ -76,31 +75,31 @@ module.exports.boardMemberInquiry = async (req, res) => {
 
     await newMember.save();
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: auth.parsed.EMAIL_USER,
-        pass: auth.parsed.EMAIL_PASS,
-      },
-    });
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     user: auth.parsed.EMAIL_USER,
+    //     pass: auth.parsed.EMAIL_PASS,
+    //   },
+    // });
 
-    const mailOptions = {
-      from: "your-admin-email@gmail.com",
-      to: "admin@example.com",
-      subject: "New Board Member Inquiry",
-      html: `
-        <h2>New Inquiry for Board Membership</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Designation:</strong> ${designation}</p>
-        <p><strong>About:</strong> ${about}</p>
-        <p><strong>Region:</strong> ${region}</p>
-        <p><strong>Expertise:</strong> ${keyRolesAndExpertise}</p>
-        <div><img src="http://localhost:5000${photo}" alt="Photo" width="100"/></div>
-        <p><a href="https://iqca-git-main-chandan-adlaks-projects-12671759.vercel.app/dashboard" target="_blank">Review Applications in Dashboard</a></p>
-      `,
-    };
+    // const mailOptions = {
+    //   from: "your-admin-email@gmail.com",
+    //   to: "admin@example.com",
+    //   subject: "New Board Member Inquiry",
+    //   html: `
+    //     <h2>New Inquiry for Board Membership</h2>
+    //     <p><strong>Name:</strong> ${name}</p>
+    //     <p><strong>Designation:</strong> ${designation}</p>
+    //     <p><strong>About:</strong> ${about}</p>
+    //     <p><strong>Region:</strong> ${region}</p>
+    //     <p><strong>Expertise:</strong> ${keyRolesAndExpertise}</p>
+    //     <div><img src="http://localhost:5000${photo}" alt="Photo" width="100"/></div>
+    //     <p><a href="https://iqca-git-main-chandan-adlaks-projects-12671759.vercel.app/dashboard" target="_blank">Review Applications in Dashboard</a></p>
+    //   `,
+    // };
 
-    await transporter.sendMail(mailOptions);
+    // await transporter.sendMail(mailOptions);
 
     res
       .status(200)
