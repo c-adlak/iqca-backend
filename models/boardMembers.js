@@ -26,11 +26,10 @@ const memberSchema = new mongoose.Schema(
     region: {
       type: String,
       required: true,
-      enum: ["North", "South", "East", "West", "Central"], // customize as needed
     },
     status: {
       type: Boolean,
-      default: false, // false = rejected, true = accepted
+      default: false,
     },
   },
   {

@@ -95,8 +95,8 @@ module.exports.boardMemberInquiry = async (req, res) => {
         <p><strong>About:</strong> ${about}</p>
         <p><strong>Region:</strong> ${region}</p>
         <p><strong>Expertise:</strong> ${keyRolesAndExpertise}</p>
-        <p><img src="http://localhost:5000${photo}" alt="Photo" width="100"/></p>
-        <p><a href="http://localhost:3000/admin/dashboard" target="_blank">Review Applications in Dashboard</a></p>
+        <div><img src="http://localhost:5000${photo}" alt="Photo" width="100"/></div>
+        <p><a href="https://iqca-git-main-chandan-adlaks-projects-12671759.vercel.app/dashboard" target="_blank">Review Applications in Dashboard</a></p>
       `,
     };
 
@@ -146,7 +146,7 @@ module.exports.rejectRequest = async (req, res) => {
     console.log(id, "id");
     const member = await BoardMembers.findByIdAndUpdate(
       id,
-      { status: true },
+      { status: false },
       { new: false }
     );
 

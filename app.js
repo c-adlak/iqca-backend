@@ -4,7 +4,12 @@ require("dotenv").config();
 const boardMembers = require("./routes/boardMembers");
 const mongoose = require("mongoose");
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: ["https://www.iqcaboard.co.uk", "https://iqca-dun.vercel.app"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 //mongoDB connection
