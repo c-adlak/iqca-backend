@@ -4,6 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
     "build": "babel src -d dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

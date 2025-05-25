@@ -6,11 +6,8 @@ const mongoose = require("mongoose");
 const app = express();
 app.use(
   cors({
-    origin: [
-      "https://www.iqcaboard.co.uk",
-      "https://iqca-dun.vercel.app",
-      "https://iqca-backend.onrender.com",
-    ],
+    origin: ["http://localhost:3000", "https://www.iqcaboard.co.uk"],
+    credentials: false,
     methods: ["GET", "POST", "OPTIONS", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type"],
   })
