@@ -2,22 +2,23 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const boardMembers = require("./routes/boardMembers");
+const contact = require("./routes/contact");
 const mongoose = require("mongoose");
 const app = express();
 app.use(
   cors({
-    origin: function(origin, callback) {
-    const allowedOrigins = [
-      "http://localhost:3000",
-      "https://www.iqcaboard.co.uk"
-    ];
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        "http://localhost:3000",
+        "https://www.iqcaboard.co.uk",
+      ];
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: false,
     methods: ["GET", "POST", "OPTIONS", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type"],
@@ -28,7 +29,8 @@ app.use(
 app.use(express.json());
 
 //mongoDB connection
-const MONGO_URL = process.env.MONGO_URL ||
+const MONGO_URL =
+  process.env.MONGO_URL ||
   "mongodb+srv://apconsultancy36:Ye7uV1iRtUs8xEwS@cluster0.iezchd7.mongodb.net/IQCA?retryWrites=true&w=majority&appName=Cluster0";
 
 // Proper connection function with options
@@ -51,6 +53,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Server is running!" });
 });
 app.use("/boardMembers", boardMembers);
+app.use("/contact", contact);
 app.use("/uploads", express.static("uploads"));
 
 const PORT = process.env.PORT || 5000;

@@ -1,5 +1,5 @@
 const BoardMembers = require("../models/boardMembers");
-// const nodemailer = require("nodemailer");
+const nodemailer = require("nodemailer");
 const auth = require("dotenv").config();
 /* Removed misplaced object literal that caused syntax error */
 // module.exports.boardMemberInquiry = async (req, res) => {
@@ -55,7 +55,15 @@ const auth = require("dotenv").config();
 
 module.exports.boardMemberInquiry = async (req, res) => {
   try {
-    const { name, designation, about, keyRolesAndExpertise, region } = req.body;
+    const {
+      name,
+      email,
+      designation,
+      about,
+      linkedin,
+      keyRolesAndExpertise,
+      region,
+    } = req.body;
     const photo = req.file ? `/uploads/${req.file.filename}` : "";
 
     console.log("Body:", req.body);
@@ -64,8 +72,10 @@ module.exports.boardMemberInquiry = async (req, res) => {
 
     const newMember = new BoardMembers({
       name,
+      email,
       designation,
       about,
+      linkedin,
       photo,
       keyRolesAndExpertise: keyRolesAndExpertise
         .split(",")
@@ -75,31 +85,33 @@ module.exports.boardMemberInquiry = async (req, res) => {
 
     await newMember.save();
 
-    // const transporter = nodemailer.createTransport({
-    //   service: "gmail",
-    //   auth: {
-    //     user: auth.parsed.EMAIL_USER,
-    //     pass: auth.parsed.EMAIL_PASS,
-    //   },
-    // });
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: auth.parsed.EMAIL_USER,
+        pass: auth.parsed.EMAIL_PASS,
+      },
+    });
 
-    // const mailOptions = {
-    //   from: "your-admin-email@gmail.com",
-    //   to: "admin@example.com",
-    //   subject: "New Board Member Inquiry",
-    //   html: `
-    //     <h2>New Inquiry for Board Membership</h2>
-    //     <p><strong>Name:</strong> ${name}</p>
-    //     <p><strong>Designation:</strong> ${designation}</p>
-    //     <p><strong>About:</strong> ${about}</p>
-    //     <p><strong>Region:</strong> ${region}</p>
-    //     <p><strong>Expertise:</strong> ${keyRolesAndExpertise}</p>
-    //     <div><img src="http://localhost:5000${photo}" alt="Photo" width="100"/></div>
-    //     <p><a href="https://iqca-git-main-chandan-adlaks-projects-12671759.vercel.app/dashboard" target="_blank">Review Applications in Dashboard</a></p>
-    //   `,
-    // };
+    const mailOptions = {
+      from: "your-admin-email@gmail.com",
+      to: "admin@example.com",
+      subject: "New Board Member Inquiry",
+      html: `
+    <h2>New Inquiry for Board Membership</h2>
+    <p><strong>Name:</strong> ${name}</p>
+    <p><strong>Email:</strong> ${email}</p>
+    <p><strong>Designation:</strong> ${designation}</p>
+    <p><strong>About:</strong> ${about}</p>
+    <p><strong>Region:</strong> ${region}</p>
+    <p><strong>Expertise:</strong> ${keyRolesAndExpertise}</p>
+    <p><strong>LinkedIn:</strong> <a href="${linkedin}" target="_blank">${linkedin}</a></p>
+    <div><img src="http://localhost:5000${photo}" alt="Photo" width="100"/></div>
+    <p><a href="https://iqca-git-main-chandan-adlaks-projects-12671759.vercel.app/dashboard" target="_blank">Review Applications in Dashboard</a></p>
+  `,
+    };
 
-    // await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
 
     res
       .status(200)

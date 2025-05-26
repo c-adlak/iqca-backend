@@ -7,6 +7,13 @@ const memberSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, "Please provide a valid email address"],
+    },
     designation: {
       type: String,
       required: true,
@@ -14,6 +21,14 @@ const memberSchema = new mongoose.Schema(
     about: {
       type: String,
       required: true,
+    },
+    linkedin: {
+      type: String,
+      trim: true,
+      match: [
+        /^https?:\/\/(www\.)?linkedin\.com\/.*$/,
+        "Please provide a valid LinkedIn profile URL",
+      ],
     },
     photo: {
       type: String, // Store URL or file path
