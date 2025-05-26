@@ -85,11 +85,19 @@ module.exports.boardMemberInquiry = async (req, res) => {
 
     await newMember.save();
 
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     user: auth.parsed.EMAIL_USER,
+    //     pass: auth.parsed.EMAIL_PASS,
+    //   },
+    // });
+
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: auth.parsed.EMAIL_USER,
-        pass: auth.parsed.EMAIL_PASS,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 

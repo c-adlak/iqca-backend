@@ -11,6 +11,8 @@ app.use(
       const allowedOrigins = [
         "http://localhost:3000",
         "https://www.iqcaboard.co.uk",
+        "https://iqca-dun.vercel.app",
+        "https://iqca-fq4wqcqww-chandan-adlaks-projects-12671759.vercel.app",
       ];
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) !== -1) {
