@@ -1,58 +1,8 @@
 const BoardMembers = require("../models/boardMembers");
 const nodemailer = require("nodemailer");
 const auth = require("dotenv").config();
-/* Removed misplaced object literal that caused syntax error */
-// module.exports.boardMemberInquiry = async (req, res) => {
-//   try {
-//     const { name, designation, about, photo, keyRolesAndExpertise, region } =
-//       req.body;
-//     console.log("1", req.body);
-
-//     const newMember = new BoardMembers({
-//       name,
-//       designation,
-//       about,
-//       photo,
-//       keyRolesAndExpertise,
-//       region,
-//     });
-
-//     await newMember.save();
-//     const transporter = nodemailer.createTransport({
-//       service: "gmail",
-//       auth: {
-//         user: "chandanadlak4321@gmail.com",
-//         pass: "omvl naek yhjy hzji",
-//       },
-//     });
-
-//     const mailOptions = {
-//       from: "your-admin-email@gmail.com",
-//       to: "admin@example.com",
-//       subject: "New Board Member Inquiry",
-//       html: `
-//         <h2>New Inquiry for Board Membership</h2>
-//         <p><strong>Name:</strong> ${name}</p>
-//         <p><strong>Designation:</strong> ${designation}</p>
-//         <p><strong>About:</strong> ${about}</p>
-//         <p><strong>Region:</strong> ${region}</p>
-//         <p><strong>Expertise:</strong> ${keyRolesAndExpertise.join(", ")}</p>
-//         <p><img src="${photo}" alt="Photo" width="100"/></p>
-//         <p><a href="http://localhost:3000/admin/dashboard" target="_blank">Review Applications in Dashboard</a></p>
-//       `,
-//     };
-
-//     await transporter.sendMail(mailOptions);
-
-//     res
-//       .status(200)
-//       .json({ message: "Board member inquiry received and email sent!" });
-//   } catch (err) {
-//     console.error("Error saving board member:", err.message);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
-
+const fs = require("fs");
+const path = require("path");
 module.exports.boardMemberInquiry = async (req, res) => {
   try {
     const {
@@ -65,7 +15,8 @@ module.exports.boardMemberInquiry = async (req, res) => {
       region,
     } = req.body;
     const photo = req.file ? `/uploads/${req.file.filename}` : "";
-
+    console.log("Request Body:", req.body);
+    console.log("Request File:", req.file);
     console.log("Body:", req.body);
     console.log("File:", req.file);
     console.log(auth.parsed, "auth");
@@ -84,15 +35,6 @@ module.exports.boardMemberInquiry = async (req, res) => {
     });
 
     await newMember.save();
-
-    // const transporter = nodemailer.createTransport({
-    //   service: "gmail",
-    //   auth: {
-    //     user: auth.parsed.EMAIL_USER,
-    //     pass: auth.parsed.EMAIL_PASS,
-    //   },
-    // });
-
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -163,19 +105,25 @@ module.exports.rejectRequest = async (req, res) => {
   try {
     const { id } = req.params;
     console.log(id, "id");
-    const member = await BoardMembers.findByIdAndUpdate(
-      id,
-      { status: false },
-      { new: false }
-    );
 
+    // Find the member
+    const member = await BoardMembers.findById(id);
     if (!member) {
       return res.status(404).json({ error: "Member not found" });
     }
 
-    res.status(200).json({ message: "Request accepted", member });
+    // Delete image from filesystem if it exists
+    const imagePath = path.join(__dirname, "..", "uploads", member.photo);
+    fs.unlink(imagePath, (err) => {
+      if (err) console.warn("Image deletion failed:", err.message);
+    });
+
+    // Delete the member from database
+    await BoardMembers.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Request rejected and member deleted" });
   } catch (err) {
-    console.error("Error accepting request:", err.message);
+    console.error("Error rejecting request:", err.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
