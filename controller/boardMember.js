@@ -1,8 +1,16 @@
 const BoardMembers = require("../models/boardMembers");
 const nodemailer = require("nodemailer");
 const auth = require("dotenv").config();
-const fs = require("fs");
 const path = require("path");
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 module.exports.boardMemberInquiry = async (req, res) => {
   try {
     const {
@@ -14,12 +22,17 @@ module.exports.boardMemberInquiry = async (req, res) => {
       keyRolesAndExpertise,
       region,
     } = req.body;
-    const photo = req.file ? `/uploads/${req.file.filename}` : "";
-    console.log("Request Body:", req.body);
-    console.log("Request File:", req.file);
-    console.log("Body:", req.body);
-    console.log("File:", req.file);
-    console.log(auth.parsed, "auth");
+
+    let photo = "";
+
+    // Upload image to Cloudinary if file exists
+    if (req.file) {
+      const cloudResult = await cloudinary.uploader.upload(req.file.path, {
+        folder: "board_members",
+      });
+      photo = cloudResult.secure_url;
+      fs.unlinkSync(req.file.path); // optional: delete temp file
+    }
 
     const newMember = new BoardMembers({
       name,
@@ -35,6 +48,7 @@ module.exports.boardMemberInquiry = async (req, res) => {
     });
 
     await newMember.save();
+
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -48,17 +62,21 @@ module.exports.boardMemberInquiry = async (req, res) => {
       to: "admin@example.com",
       subject: "New Board Member Inquiry",
       html: `
-    <h2>New Inquiry for Board Membership</h2>
-    <p><strong>Name:</strong> ${name}</p>
-    <p><strong>Email:</strong> ${email}</p>
-    <p><strong>Designation:</strong> ${designation}</p>
-    <p><strong>About:</strong> ${about}</p>
-    <p><strong>Region:</strong> ${region}</p>
-    <p><strong>Expertise:</strong> ${keyRolesAndExpertise}</p>
-    <p><strong>LinkedIn:</strong> <a href="${linkedin}" target="_blank">${linkedin}</a></p>
-    <div><img src="http://localhost:5000${photo}" alt="Photo" width="100"/></div>
-    <p><a href="https://iqca-git-main-chandan-adlaks-projects-12671759.vercel.app/dashboard" target="_blank">Review Applications in Dashboard</a></p>
-  `,
+        <h2>New Inquiry for Board Membership</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Designation:</strong> ${designation}</p>
+        <p><strong>About:</strong> ${about}</p>
+        <p><strong>Region:</strong> ${region}</p>
+        <p><strong>Expertise:</strong> ${keyRolesAndExpertise}</p>
+        <p><strong>LinkedIn:</strong> <a href="${linkedin}" target="_blank">${linkedin}</a></p>
+        ${
+          photo
+            ? `<div><img src="${photo}" alt="Photo" width="100"/></div>`
+            : ""
+        }
+        <p><a href="https://iqca-git-main-chandan-adlaks-projects-12671759.vercel.app/dashboard" target="_blank">Review Applications in Dashboard</a></p>
+      `,
     };
 
     await transporter.sendMail(mailOptions);
