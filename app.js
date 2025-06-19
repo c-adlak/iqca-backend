@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const boardMembers = require("./routes/boardMembers");
+const userAuth = require("./routes/userAuth");
 const contact = require("./routes/contact");
 const mongoose = require("mongoose");
 const app = express();
@@ -23,7 +24,7 @@ app.use(
     },
     credentials: false,
     methods: ["GET", "POST", "OPTIONS", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -54,8 +55,12 @@ main();
 app.get("/", (req, res) => {
   res.json({ message: "Server is running!" });
 });
+const seedAdmin = require("./utils/seedAdmin");
+seedAdmin();
+
 app.use("/boardMembers", boardMembers);
 app.use("/contact", contact);
+app.use("/auth", userAuth);
 app.use("/uploads", express.static("uploads"));
 
 const PORT = process.env.PORT || 5000;

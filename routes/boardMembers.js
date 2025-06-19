@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const BoardMembersController = require("../controller/boardMember");
+const UserController = require("../controller/Users");
 const multer = require("multer");
 
 // Define storage
@@ -15,8 +16,26 @@ const upload = multer({ storage });
 router
   .route("/board-member-inquiry")
   .post(upload.single("photo"), BoardMembersController.boardMemberInquiry);
-router.route("/get-board-members").get(BoardMembersController.getBoardMembers);
-router.route("/accept-request/:id").patch(BoardMembersController.acceptRequest);
-router.route("/reject-request/:id").patch(BoardMembersController.rejectRequest);
+router
+  .route("/get-board-members")
+  .get(
+    UserController.verifyToken,
+    UserController.verifyAdmin,
+    BoardMembersController.getBoardMembers
+  );
+router
+  .route("/accept-request/:id")
+  .patch(
+    UserController.verifyToken,
+    UserController.verifyAdmin,
+    BoardMembersController.acceptRequest
+  );
+router
+  .route("/reject-request/:id")
+  .patch(
+    UserController.verifyToken,
+    UserController.verifyAdmin,
+    BoardMembersController.rejectRequest
+  );
 
 module.exports = router;
