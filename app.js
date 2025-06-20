@@ -42,7 +42,7 @@ async function main() {
     await mongoose.connect(MONGO_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 10000, // timeout after 10s
+      serverSelectionTimeoutMS: 10000,
     });
     console.log("✅ Connected to MongoDB Atlas");
   } catch (err) {

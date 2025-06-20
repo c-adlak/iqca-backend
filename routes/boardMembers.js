@@ -23,6 +23,7 @@ router
     UserController.verifyAdmin,
     BoardMembersController.getBoardMembers
   );
+router.route("/board-members").get(BoardMembersController.getBoardMembers);
 router
   .route("/accept-request/:id")
   .patch(

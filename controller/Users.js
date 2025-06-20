@@ -77,12 +77,7 @@ module.exports.login = async (req, res) => {
 
 // Middleware to verify JWT token and user role
 module.exports.verifyToken = (req, res, next) => {
-  console.log("Verifying token...", req.header("Authorization")); // Debugging line to check the Authorization header
   const token = req.header("Authorization")?.replace("Bearer ", "");
-  console.log("Token:", token); // Debugging line to check the token
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  req.user = decoded;
-  console.log("Decoded user:", req.user);
   if (!token) {
     return res.status(401).json({ error: "Access denied. No token provided." });
   }
