@@ -13,7 +13,7 @@ module.exports.sendEmail = async (req, res) => {
 
   const mailOptions = {
     from: `${email}`,
-    to: "admin@example.com",
+    to: `${process.env.EMAIL_USER}`,
     subject: "New Inquiry Submission",
     html: `
       <h2>New Inquiry Received</h2>

@@ -24,7 +24,7 @@ module.exports.boardMemberInquiry = async (req, res) => {
     } = req.body;
 
     let photo = "";
-
+    console.log("heloo");
     // Upload image to Cloudinary if file exists
     if (req.file) {
       const cloudResult = await cloudinary.uploader.upload(req.file.path, {
@@ -58,8 +58,8 @@ module.exports.boardMemberInquiry = async (req, res) => {
     });
 
     const mailOptions = {
-      from: "your-admin-email@gmail.com",
-      to: "admin@example.com",
+      from: `${email}`,
+      to: `${process.env.EMAIL_USER}`,
       subject: "New Board Member Inquiry",
       html: `
         <h2>New Inquiry for Board Membership</h2>
