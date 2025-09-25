@@ -4,6 +4,7 @@ require("dotenv").config();
 const boardMembers = require("./routes/boardMembers");
 const userAuth = require("./routes/userAuth");
 const contact = require("./routes/contact");
+const careerApplication = require("./routes/careerApplication");
 const mongoose = require("mongoose");
 const app = express();
 app.use(
@@ -58,9 +59,11 @@ app.get("/", (req, res) => {
 const seedAdmin = require("./utils/seedAdmin");
 seedAdmin();
 
+
 app.use("/boardMembers", boardMembers);
 app.use("/contact", contact);
 app.use("/auth", userAuth);
+app.use("/career", careerApplication);
 app.use("/uploads", express.static("uploads"));
 
 const PORT = process.env.PORT || 5000;
