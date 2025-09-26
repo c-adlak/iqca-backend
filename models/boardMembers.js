@@ -14,31 +14,20 @@ const memberSchema = new mongoose.Schema(
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, "Please provide a valid email address"],
     },
-    designation: {
-      type: String,
+    phone: {
+      type: Number,
       required: true,
     },
     about: {
       type: String,
       required: true,
     },
-    linkedin: {
-      type: String,
-      trim: true,
-      match: [
-        /^https?:\/\/(www\.)?linkedin\.com\/.*$/,
-        "Please provide a valid LinkedIn profile URL",
-      ],
-    },
+    
     photo: {
-      type: String, // Store URL or file path
+      type: String, 
       required: true,
     },
-    keyRolesAndExpertise: {
-      type: [String], // Array of strings
-      default: [],
-    },
-    region: {
+    country: {
       type: String,
       required: true,
     },

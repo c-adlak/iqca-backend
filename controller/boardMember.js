@@ -16,35 +16,28 @@ module.exports.boardMemberInquiry = async (req, res) => {
     const {
       name,
       email,
-      designation,
+      phone,
       about,
-      linkedin,
-      keyRolesAndExpertise,
-      region,
+      country,
     } = req.body;
 
     let photo = "";
-    console.log("heloo");
     // Upload image to Cloudinary if file exists
     if (req.file) {
       const cloudResult = await cloudinary.uploader.upload(req.file.path, {
         folder: "board_members",
       });
       photo = cloudResult.secure_url;
-      fs.unlinkSync(req.file.path); // optional: delete temp file
+      fs.unlinkSync(req.file.path);
     }
 
     const newMember = new BoardMembers({
       name,
       email,
-      designation,
       about,
-      linkedin,
+      phone,
       photo,
-      keyRolesAndExpertise: keyRolesAndExpertise
-        .split(",")
-        .map((s) => s.trim()),
-      region,
+      country,
     });
 
     await newMember.save();

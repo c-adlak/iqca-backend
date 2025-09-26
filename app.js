@@ -5,6 +5,8 @@ const boardMembers = require("./routes/boardMembers");
 const userAuth = require("./routes/userAuth");
 const contact = require("./routes/contact");
 const careerApplication = require("./routes/careerApplication");
+const courses = require("./routes/courses");
+const events = require("./routes/events");
 const mongoose = require("mongoose");
 const app = express();
 app.use(
@@ -64,6 +66,8 @@ app.use("/boardMembers", boardMembers);
 app.use("/contact", contact);
 app.use("/auth", userAuth);
 app.use("/career", careerApplication);
+app.use("/courses", courses);
+app.use("/events", events);
 app.use("/uploads", express.static("uploads"));
 
 const PORT = process.env.PORT || 5000;
