@@ -1,12 +1,31 @@
 const Event = require("../models/Event");
 const cloudinary = require("cloudinary").v2;
 
-
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 module.exports.createEvent = async (req, res) => {
   try {
-    const { name, description, date, image, pdf } = req.body;
-    const event = new Event({ name, description, date, image, pdf });
+    const { name, date, pdf } = req.body;
+    let imageUrl = null;
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "events/images",
+      });
+      imageUrl = result.secure_url;
+    }
+
+    const event = new Event({
+      name,
+      date,
+      pdf,
+      image: imageUrl,
+    });
+
     await event.save();
     res.status(201).json({ message: "Event created", event });
   } catch (err) {
@@ -14,7 +33,6 @@ module.exports.createEvent = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 module.exports.getEvents = async (req, res) => {
   try {
     const events = await Event.find().sort({ date: -1 });
@@ -63,5 +81,3 @@ module.exports.deleteEvent = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-

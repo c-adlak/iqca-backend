@@ -5,7 +5,7 @@ require("dotenv").config();
 
 module.exports.register = async (req, res) => {
   try {
-    const { username, password, role = "student" } = req.body; // Default role is student
+    const { username, password, role = "student" } = req.body;
 
     // Validate role
     if (!["admin", "student"].includes(role)) {

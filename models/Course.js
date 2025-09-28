@@ -22,7 +22,7 @@ const courseSchema = new mongoose.Schema(
       trim: true,
     },
     image: {
-      type: String, // store URL (Cloudinary) or local path
+      type: String,
       default: "",
     },
   },

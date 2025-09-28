@@ -11,6 +11,19 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+
+// Create transporter outside the function to reuse it
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+  pool: true, // Use connection pooling
+  maxConnections: 5, // Limit concurrent connections
+  maxMessages: 100, // Limit messages per connection
+});
+
 module.exports.boardMemberInquiry = async (req, res) => {
   try {
     const {
@@ -20,49 +33,62 @@ module.exports.boardMemberInquiry = async (req, res) => {
       about,
       country,
     } = req.body;
-
-    let photo = "";
+    
+    console.log(req.body, 'data ---------');
+    
+    let photo = null;
+    
     // Upload image to Cloudinary if file exists
     if (req.file) {
-      const cloudResult = await cloudinary.uploader.upload(req.file.path, {
-        folder: "board_members",
-      });
-      photo = cloudResult.secure_url;
-      fs.unlinkSync(req.file.path);
+      try {
+        const cloudResult = await cloudinary.uploader.upload(req.file.path, {
+          folder: "board_members",
+          resource_type: "auto",
+        });
+        photo = cloudResult.secure_url;
+        
+        // Clean up the uploaded file
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.error('Error deleting temp file:', err);
+        });
+      } catch (uploadError) {
+        console.error('Cloudinary upload error:', uploadError);
+        // Clean up file even if upload fails
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.error('Error deleting temp file:', err);
+        });
+      }
     }
 
-    const newMember = new BoardMembers({
+    // Create member data object
+    const memberData = {
       name,
       email,
       about,
       phone,
-      photo,
       country,
-    });
+    };
 
+    // Only add photo if it exists
+    if (photo) {
+      memberData.photo = photo;
+    }
+
+    const newMember = new BoardMembers(memberData);
     await newMember.save();
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
     const mailOptions = {
-      from: `${email}`,
-      to: `${process.env.EMAIL_USER}`,
+      from: process.env.EMAIL_USER, // Use your email as sender
+      replyTo: email, // Set user's email as reply-to
+      to: process.env.EMAIL_USER,
       subject: "New Board Member Inquiry",
       html: `
         <h2>New Inquiry for Board Membership</h2>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Designation:</strong> ${designation}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
         <p><strong>About:</strong> ${about}</p>
-        <p><strong>Region:</strong> ${region}</p>
-        <p><strong>Expertise:</strong> ${keyRolesAndExpertise}</p>
-        <p><strong>LinkedIn:</strong> <a href="${linkedin}" target="_blank">${linkedin}</a></p>
+        <p><strong>Country:</strong> ${country}</p>
         ${
           photo
             ? `<div><img src="${photo}" alt="Photo" width="100"/></div>`
@@ -76,10 +102,36 @@ module.exports.boardMemberInquiry = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Board member inquiry received and email sent!" });
+      .json({ 
+        message: "Board member inquiry received and email sent!",
+        success: true 
+      });
+      
   } catch (err) {
-    console.error("Error saving board member:", err.message);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error saving board member:", err);
+    
+    // Clean up uploaded file if there was an error
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (unlinkErr) => {
+        if (unlinkErr) console.error('Error deleting temp file:', unlinkErr);
+      });
+    }
+    
+    // Send more specific error response
+    if (err.name === 'ValidationError') {
+      const validationErrors = Object.values(err.errors).map(e => e.message);
+      res.status(400).json({ 
+        error: "Validation Error", 
+        details: validationErrors,
+        success: false
+      });
+    } else {
+      res.status(500).json({ 
+        error: "Internal Server Error",
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+        success: false
+      });
+    }
   }
 };
 

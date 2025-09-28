@@ -22,10 +22,10 @@ const memberSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    
     photo: {
       type: String, 
-      required: true,
+      required: false, // Changed from true to false
+      default: null,   // Added default value
     },
     country: {
       type: String,

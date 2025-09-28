@@ -10,6 +10,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+
 // Public
 router.get("/", EventsController.getEvents);
 router.get("/:id", EventsController.getEventById);
@@ -19,10 +20,7 @@ router.post(
   "/",
   UserController.verifyToken,
   UserController.verifyAdmin,
-  upload.fields([
-    { name: "image", maxCount: 1 },
-    { name: "pdf", maxCount: 1 },
-  ]),
+  upload.single("image"),
   EventsController.createEvent
 );
 
@@ -30,10 +28,6 @@ router.patch(
   "/:id",
   UserController.verifyToken,
   UserController.verifyAdmin,
-  upload.fields([
-    { name: "image", maxCount: 1 },
-    { name: "pdf", maxCount: 1 },
-  ]),
   EventsController.updateEvent
 );
 

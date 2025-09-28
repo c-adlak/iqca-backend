@@ -52,7 +52,19 @@ async function main() {
     console.error("❌ Error connecting to MongoDB:", err.message);
   }
 }
-
+// async function seedCourses() {
+//   try {
+//     const existing = await Course.find();
+//     if (existing.length === 0) {
+//       const inserted = await Course.insertMany(coursesData);
+//       console.log(`✅ ${inserted.length} courses added to the database`);
+//     } else {
+//       console.log("ℹ️ Courses already exist in the database, skipping seeding");
+//     }
+//   } catch (err) {
+//     console.error("❌ Error seeding courses:", err.message);
+//   }
+// }
 main();
 // Example route
 app.get("/", (req, res) => {
@@ -60,7 +72,6 @@ app.get("/", (req, res) => {
 });
 const seedAdmin = require("./utils/seedAdmin");
 seedAdmin();
-
 
 app.use("/boardMembers", boardMembers);
 app.use("/contact", contact);
