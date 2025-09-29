@@ -13,17 +13,26 @@ module.exports.submitApplication = async (req, res) => {
   try {
     const { name, email, position, message } = req.body;
     let resume = "";
-    // Upload resume to Cloudinary if file exists
-    if (req.file) {
-      const cloudResult = await cloudinary.uploader.upload(req.file.path, {
-        folder: "career_resumes",
-        resource_type: "raw",
-      });
-      resume = cloudResult.secure_url;
-      fs.unlinkSync(req.file.path); // delete temp file
-    } else {
+
+    if (!req.file) {
       return res.status(400).json({ error: "Resume file is required" });
     }
+
+    if (req.file.size > 10 * 1024 * 1024) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({
+        error: "Resume file too large. Max allowed size is 10 MB.",
+      });
+    }
+
+    // ✅ Upload to Cloudinary
+    const cloudResult = await cloudinary.uploader.upload(req.file.path, {
+      folder: "career_resumes",
+    });
+    resume = cloudResult.secure_url;
+    fs.unlinkSync(req.file.path);
+
+    // ✅ Save to DB
     const application = new CareerApplication({
       name,
       email,
@@ -32,7 +41,8 @@ module.exports.submitApplication = async (req, res) => {
       message,
     });
     await application.save();
-    // Send notification email to admin
+
+    // ✅ Send notification email to admin
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -40,9 +50,10 @@ module.exports.submitApplication = async (req, res) => {
         pass: process.env.EMAIL_PASS,
       },
     });
+
     const mailOptions = {
-      from: `${email}`,
-      to: `${process.env.EMAIL_USER}`,
+      from: email,
+      to: process.env.EMAIL_USER,
       subject: "New Career Application",
       html: `
         <h2>New Career Application</h2>
@@ -53,7 +64,9 @@ module.exports.submitApplication = async (req, res) => {
         <p><a href="${resume}" target="_blank">Download Resume</a></p>
       `,
     };
+
     await transporter.sendMail(mailOptions);
+
     res.status(200).json({ message: "Application submitted successfully!" });
   } catch (err) {
     console.error("Error submitting application:", err.message);

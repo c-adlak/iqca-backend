@@ -10,13 +10,13 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Submit application (with resume upload)
-router.post("/apply", upload.single("resume"), careerController.submitApplication);
-// Get all applications (admin)
+router.post(
+  "/apply",
+  upload.single("resume"),
+  careerController.submitApplication
+);
 router.get("/applications", careerController.getApplications);
-// Update application status (admin)
 router.patch("/applications/:id/status", careerController.updateStatus);
-// Delete application (admin)
 router.delete("/applications/:id", careerController.deleteApplication);
 
 module.exports = router;
