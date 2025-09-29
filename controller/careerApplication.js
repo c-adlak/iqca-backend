@@ -11,28 +11,7 @@ cloudinary.config({
 
 module.exports.submitApplication = async (req, res) => {
   try {
-    const { name, email, position, message } = req.body;
-    let resume = "";
-
-    if (!req.file) {
-      return res.status(400).json({ error: "Resume file is required" });
-    }
-
-    if (req.file.size > 10 * 1024 * 1024) {
-      fs.unlinkSync(req.file.path);
-      return res.status(400).json({
-        error: "Resume file too large. Max allowed size is 10 MB.",
-      });
-    }
-
-    // ✅ Upload to Cloudinary
-    const cloudResult = await cloudinary.uploader.upload(req.file.path, {
-      folder: "career_resumes",
-    });
-    resume = cloudResult.secure_url;
-    fs.unlinkSync(req.file.path);
-
-    // ✅ Save to DB
+    const { name, email, position, message, resume } = req.body;
     const application = new CareerApplication({
       name,
       email,
@@ -41,18 +20,20 @@ module.exports.submitApplication = async (req, res) => {
       message,
     });
     await application.save();
-
-    // ✅ Send notification email to admin
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
     });
 
     const mailOptions = {
-      from: email,
+      from: process.env.EMAIL_USER,
+      replyTo: email,
       to: process.env.EMAIL_USER,
       subject: "New Career Application",
       html: `

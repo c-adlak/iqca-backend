@@ -11,7 +11,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-
 // Create transporter outside the function to reuse it
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -19,26 +18,17 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  pool: true, // Use connection pooling
-  maxConnections: 5, // Limit concurrent connections
-  maxMessages: 100, // Limit messages per connection
+  pool: true,
+  maxConnections: 5,
+  maxMessages: 100,
 });
 
 module.exports.boardMemberInquiry = async (req, res) => {
   try {
-    const {
-      name,
-      email,
-      phone,
-      about,
-      country,
-    } = req.body;
-    
-    console.log(req.body, 'data ---------');
-    
+    const { name, email, phone, about, country } = req.body;
+
     let photo = null;
-    
-    // Upload image to Cloudinary if file exists
+
     if (req.file) {
       try {
         const cloudResult = await cloudinary.uploader.upload(req.file.path, {
@@ -46,21 +36,18 @@ module.exports.boardMemberInquiry = async (req, res) => {
           resource_type: "auto",
         });
         photo = cloudResult.secure_url;
-        
-        // Clean up the uploaded file
+
         fs.unlink(req.file.path, (err) => {
-          if (err) console.error('Error deleting temp file:', err);
+          if (err) console.error("Error deleting temp file:", err);
         });
       } catch (uploadError) {
-        console.error('Cloudinary upload error:', uploadError);
-        // Clean up file even if upload fails
+        console.error("Cloudinary upload error:", uploadError);
         fs.unlink(req.file.path, (err) => {
-          if (err) console.error('Error deleting temp file:', err);
+          if (err) console.error("Error deleting temp file:", err);
         });
       }
     }
 
-    // Create member data object
     const memberData = {
       name,
       email,
@@ -69,7 +56,6 @@ module.exports.boardMemberInquiry = async (req, res) => {
       country,
     };
 
-    // Only add photo if it exists
     if (photo) {
       memberData.photo = photo;
     }
@@ -78,8 +64,8 @@ module.exports.boardMemberInquiry = async (req, res) => {
     await newMember.save();
 
     const mailOptions = {
-      from: process.env.EMAIL_USER, // Use your email as sender
-      replyTo: email, // Set user's email as reply-to
+      from: process.env.EMAIL_USER,
+      replyTo: email,
       to: process.env.EMAIL_USER,
       subject: "New Board Member Inquiry",
       html: `
@@ -100,36 +86,34 @@ module.exports.boardMemberInquiry = async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    res
-      .status(200)
-      .json({ 
-        message: "Board member inquiry received and email sent!",
-        success: true 
-      });
-      
+    res.status(200).json({
+      message: "Board member inquiry received and email sent!",
+      success: true,
+    });
   } catch (err) {
     console.error("Error saving board member:", err);
-    
-    // Clean up uploaded file if there was an error
+
     if (req.file && req.file.path) {
       fs.unlink(req.file.path, (unlinkErr) => {
-        if (unlinkErr) console.error('Error deleting temp file:', unlinkErr);
+        if (unlinkErr) console.error("Error deleting temp file:", unlinkErr);
       });
     }
-    
-    // Send more specific error response
-    if (err.name === 'ValidationError') {
-      const validationErrors = Object.values(err.errors).map(e => e.message);
-      res.status(400).json({ 
-        error: "Validation Error", 
+
+    if (err.name === "ValidationError") {
+      const validationErrors = Object.values(err.errors).map((e) => e.message);
+      res.status(400).json({
+        error: "Validation Error",
         details: validationErrors,
-        success: false
+        success: false,
       });
     } else {
-      res.status(500).json({ 
+      res.status(500).json({
         error: "Internal Server Error",
-        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
-        success: false
+        message:
+          process.env.NODE_ENV === "development"
+            ? err.message
+            : "Something went wrong",
+        success: false,
       });
     }
   }
