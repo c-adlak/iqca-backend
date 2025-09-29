@@ -59,7 +59,6 @@ module.exports.boardMemberInquiry = async (req, res) => {
 
     await newMember.save();
 
-    // Email options
     const mailOptions = {
       from: process.env.EMAIL_USER,
       replyTo: email,
@@ -80,8 +79,8 @@ module.exports.boardMemberInquiry = async (req, res) => {
       `,
     };
 
-    // Send email
-    await transporter.sendMail(mailOptions);
+    // not sending mail for now
+    // await transporter.sendMail(mailOptions);
     console.log("Email sent successfully");
 
     // Send response to frontend
