@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // use App Password
+    pass: process.env.EMAIL_PASS,
   },
   secure: true,
 });
@@ -77,11 +77,6 @@ module.exports.boardMemberInquiry = async (req, res) => {
             ? `<div><img src="${photo}" alt="Photo" width="100"/></div>`
             : ""
         }
-        <p>
-          <a href="https://iqca-git-main-chandan-adlaks-projects-12671759.vercel.app/dashboard" target="_blank">
-            Review Applications in Dashboard
-          </a>
-        </p>
       `,
     };
 
@@ -162,13 +157,12 @@ module.exports.rejectRequest = async (req, res) => {
     if (!member) {
       return res.status(404).json({ error: "Member not found" });
     }
-
-    // Delete image from filesystem if it exists
-    const imagePath = path.join(__dirname, "..", "uploads", member.photo);
-    fs.unlink(imagePath, (err) => {
-      if (err) console.warn("Image deletion failed:", err.message);
-    });
-
+    if (member.photo) {
+      const imagePath = path.join(__dirname, "..", "uploads", member.photo);
+      fs.unlink(imagePath, (err) => {
+        if (err) console.warn("Image deletion failed:", err.message);
+      });
+    }
     // Delete the member from database
     await BoardMembers.findByIdAndDelete(id);
 
