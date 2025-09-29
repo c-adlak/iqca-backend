@@ -11,16 +11,13 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Create transporter outside the function to reuse it
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    pass: process.env.EMAIL_PASS, // use App Password
   },
-  pool: true,
-  maxConnections: 5,
-  maxMessages: 100,
+  secure: true,
 });
 
 module.exports.boardMemberInquiry = async (req, res) => {
@@ -29,6 +26,7 @@ module.exports.boardMemberInquiry = async (req, res) => {
 
     let photo = null;
 
+    // Upload photo if provided
     if (req.file) {
       try {
         const cloudResult = await cloudinary.uploader.upload(req.file.path, {
@@ -37,6 +35,7 @@ module.exports.boardMemberInquiry = async (req, res) => {
         });
         photo = cloudResult.secure_url;
 
+        // Delete temp file after upload
         fs.unlink(req.file.path, (err) => {
           if (err) console.error("Error deleting temp file:", err);
         });
@@ -48,21 +47,19 @@ module.exports.boardMemberInquiry = async (req, res) => {
       }
     }
 
-    const memberData = {
+    // Save to DB
+    const newMember = new BoardMembers({
       name,
       email,
-      about,
       phone,
+      about,
       country,
-    };
+      ...(photo && { photo }),
+    });
 
-    if (photo) {
-      memberData.photo = photo;
-    }
-
-    const newMember = new BoardMembers(memberData);
     await newMember.save();
 
+    // Email options
     const mailOptions = {
       from: process.env.EMAIL_USER,
       replyTo: email,
@@ -80,12 +77,19 @@ module.exports.boardMemberInquiry = async (req, res) => {
             ? `<div><img src="${photo}" alt="Photo" width="100"/></div>`
             : ""
         }
-        <p><a href="https://iqca-git-main-chandan-adlaks-projects-12671759.vercel.app/dashboard" target="_blank">Review Applications in Dashboard</a></p>
+        <p>
+          <a href="https://iqca-git-main-chandan-adlaks-projects-12671759.vercel.app/dashboard" target="_blank">
+            Review Applications in Dashboard
+          </a>
+        </p>
       `,
     };
 
+    // Send email
     await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully");
 
+    // Send response to frontend
     res.status(200).json({
       message: "Board member inquiry received and email sent!",
       success: true,
