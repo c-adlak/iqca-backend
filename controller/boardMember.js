@@ -150,9 +150,6 @@ module.exports.acceptRequest = async (req, res) => {
 module.exports.rejectRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id, "id");
-
-    // Find the member
     const member = await BoardMembers.findById(id);
     if (!member) {
       return res.status(404).json({ error: "Member not found" });
@@ -163,7 +160,6 @@ module.exports.rejectRequest = async (req, res) => {
         if (err) console.warn("Image deletion failed:", err.message);
       });
     }
-    // Delete the member from database
     await BoardMembers.findByIdAndDelete(id);
 
     res.status(200).json({ message: "Request rejected and member deleted" });
