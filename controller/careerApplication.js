@@ -20,33 +20,33 @@ module.exports.submitApplication = async (req, res) => {
       message,
     });
     await application.save();
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      pool: true,
-      maxConnections: 5,
-      maxMessages: 100,
-    });
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASS,
+    //   },
+    //   pool: true,
+    //   maxConnections: 5,
+    //   maxMessages: 100,
+    // });
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      replyTo: email,
-      to: process.env.EMAIL_USER,
-      subject: "New Career Application",
-      html: `
-        <h2>New Career Application</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Position:</strong> ${position}</p>
-        <p><strong>Message:</strong> ${message}</p>
-        <p><a href="${resume}" target="_blank">Download Resume</a></p>
-      `,
-    };
+    // const mailOptions = {
+    //   from: process.env.EMAIL_USER,
+    //   replyTo: email,
+    //   to: process.env.EMAIL_USER,
+    //   subject: "New Career Application",
+    //   html: `
+    //     <h2>New Career Application</h2>
+    //     <p><strong>Name:</strong> ${name}</p>
+    //     <p><strong>Email:</strong> ${email}</p>
+    //     <p><strong>Position:</strong> ${position}</p>
+    //     <p><strong>Message:</strong> ${message}</p>
+    //     <p><a href="${resume}" target="_blank">Download Resume</a></p>
+    //   `,
+    // };
 
-    await transporter.sendMail(mailOptions);
+    // await transporter.sendMail(mailOptions);
 
     res.status(200).json({ message: "Application submitted successfully!" });
   } catch (err) {

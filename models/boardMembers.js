@@ -23,9 +23,9 @@ const memberSchema = new mongoose.Schema(
       required: true,
     },
     photo: {
-      type: String, 
-      required: false, // Changed from true to false
-      default: null,   // Added default value
+      type: String,
+      required: false,
+      default: null,
     },
     country: {
       type: String,
