@@ -2,7 +2,20 @@ const nodemailer = require("nodemailer");
 
 module.exports.sendEmail = async (req, res) => {
   const { name, email, phone, interest, message, newsletter } = req.body;
-  console.log("Received contact form data:", req.body);
+  
+  // Validate required fields
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: "Name, email, and message are required." });
+  }
+
+  // Check if email credentials are configured
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error("Email credentials not configured");
+    return res.status(500).json({ error: "Email service not configured." });
+  }
+
+  console.log("Email credentials found:", process.env.EMAIL_USER ? "Yes" : "No");
+  
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -27,10 +40,21 @@ module.exports.sendEmail = async (req, res) => {
   };
 
   try {
+    console.log("Attempting to send email...");
     await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully!");
     res.status(200).json({ message: "Email sent successfully!" });
   } catch (error) {
-    console.error("Email send error:", error);
-    res.status(500).json({ error: "Failed to send email." });
+    console.error("Email send error details:", {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      responseCode: error.responseCode
+    });
+    res.status(500).json({ 
+      error: "Failed to send email.",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
