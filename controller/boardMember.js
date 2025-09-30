@@ -167,3 +167,64 @@ module.exports.rejectRequest = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+// Update board member details
+module.exports.updateBoardMember = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { name, email, phone, about, country, status } = req.body;
+
+    const updateData = {};
+    if (typeof name !== "undefined") updateData.name = name;
+    if (typeof email !== "undefined") updateData.email = email;
+    if (typeof phone !== "undefined") updateData.phone = phone;
+    if (typeof about !== "undefined") updateData.about = about;
+    if (typeof country !== "undefined") updateData.country = country;
+    if (typeof status !== "undefined") updateData.status =
+      status === true || status === "true";
+
+    if (req.file) {
+      try {
+        const cloudResult = await cloudinary.uploader.upload(req.file.path, {
+          folder: "board_members",
+          resource_type: "auto",
+        });
+        updateData.photo = cloudResult.secure_url;
+      } finally {
+        if (req.file && req.file.path) {
+          fs.unlink(req.file.path, (err) => {
+            if (err) console.error("Error deleting temp file:", err);
+          });
+        }
+      }
+    }
+
+    const updated = await BoardMembers.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updated) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+
+    res.status(200).json({ message: "Member updated", member: updated });
+  } catch (err) {
+    console.error("Error updating member:", err);
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (unlinkErr) => {
+        if (unlinkErr) console.error("Error deleting temp file:", unlinkErr);
+      });
+    }
+    if (err.name === "ValidationError") {
+      const validationErrors = Object.values(err.errors).map((e) => e.message);
+      return res.status(400).json({
+        error: "Validation Error",
+        details: validationErrors,
+        success: false,
+      });
+    }
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};

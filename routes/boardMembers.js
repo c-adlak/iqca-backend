@@ -39,4 +39,14 @@ router
     BoardMembersController.rejectRequest
   );
 
+// Update board member (with optional new photo)
+router
+  .route("/board-members/:id")
+  .patch(
+    UserController.verifyToken,
+    UserController.verifyAdmin,
+    upload.single("photo"),
+    BoardMembersController.updateBoardMember
+  );
+
 module.exports = router;
